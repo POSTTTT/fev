@@ -297,6 +297,7 @@ function App() {
                 artifact code can't reach the parent app. */}
             {preview?.mode === "srcdoc" && (
               <iframe
+                key={file.path}
                 className="frame"
                 title="preview"
                 sandbox="allow-scripts allow-forms allow-popups allow-modals"

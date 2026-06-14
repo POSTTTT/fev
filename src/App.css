@@ -363,3 +363,168 @@ html,
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* ---------------------------------------------------------------------------
+   Motion — entrances + micro-interactions. Kept subtle and snappy.
+   Honors prefers-reduced-motion (see bottom).
+--------------------------------------------------------------------------- */
+
+@keyframes fev-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fev-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fev-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fev-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Sidebar slides in; its inner blocks rise in sequence. */
+.sidebar {
+  animation: fev-fade 0.18s ease both;
+}
+
+.brand,
+.open-btn,
+.recents-label {
+  animation: fev-rise 0.28s ease both;
+}
+
+.open-btn {
+  animation-delay: 0.04s;
+}
+.recents-label {
+  animation-delay: 0.08s;
+}
+
+/* Recent rows stagger in and shift on hover. */
+.recents li {
+  animation: fev-rise 0.26s ease both;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s ease;
+}
+
+.recents li:hover {
+  transform: translateX(2px);
+}
+
+.recents li:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.recents li:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.recents li:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.recents li:nth-child(4) {
+  animation-delay: 0.16s;
+}
+.recents li:nth-child(n + 5) {
+  animation-delay: 0.2s;
+}
+
+/* Press feedback on the primary button. */
+.open-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Kebab menu pops from its corner. */
+.menu {
+  transform-origin: top right;
+  animation: fev-pop 0.13s ease both;
+}
+
+.menu button {
+  transition: background 0.12s ease, padding-left 0.12s ease;
+}
+.menu button:hover {
+  padding-left: calc(var(--ds-space-3) + 3px);
+}
+
+/* Toggle buttons nudge on hover. */
+.collapse-btn,
+.reveal-btn {
+  transition:
+    color 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s ease;
+}
+.collapse-btn:hover {
+  transform: translateX(-2px);
+}
+.reveal-btn:hover {
+  transform: translateX(2px);
+}
+
+/* Topbar drops in; preview fades up when a file loads. */
+.topbar {
+  animation: fev-slide-down 0.24s ease both;
+}
+
+.frame,
+.notyet {
+  animation: fev-fade 0.3s ease both;
+}
+
+.dropzone {
+  animation: fev-fade 0.3s ease both;
+}
+
+/* The dropzone hint gently floats. */
+.dropzone p:first-child {
+  animation: fev-float 3.2s ease-in-out infinite;
+}
+
+@keyframes fev-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
