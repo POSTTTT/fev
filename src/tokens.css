@@ -1,0 +1,79 @@
+/**
+ * Monospace design-system tokens.
+ * Vendored from design-system/monospace/dist/css/tokens.css (auto-generated).
+ */
+
+:root {
+  --ds-border-width-thin: 1px;
+  --ds-border-width-thick: 2px;
+  --ds-color-palette-void: #1e2228; /** Deepest surface — panels, cards */
+  --ds-color-palette-ink: #282c34; /** Main editor background (One Dark) */
+  --ds-color-palette-black: #111111; /** Terminal / code surface */
+  --ds-color-palette-cyan: #9cdef2; /** Primary text + headings */
+  --ds-color-palette-slate: #6b8a94; /** Muted text */
+  --ds-color-palette-border: #355a66; /** Teal hairline borders */
+  --ds-color-palette-coral: #e06c75; /** Accent / danger (One Dark red) */
+  --ds-color-palette-coral-light: #f0989e; /** Accent gradient end */
+  --ds-color-palette-green: #50fa7b; /** Success */
+  --ds-color-palette-gold: #f0ad4e; /** Warning */
+  --ds-color-palette-white: #ffffff;
+  --ds-button-padding-x: 1rem;
+  --ds-button-padding-y: 0.5625rem; /** 9px — matches source .btn */
+  --ds-radius-none: 0rem;
+  --ds-radius-sm: 0.375rem;
+  --ds-radius-md: 0.5rem;
+  --ds-radius-lg: 0.625rem;
+  --ds-radius-xl: 0.875rem;
+  --ds-radius-full: 9999px;
+  --ds-shadow-sm: 0px 6px 22px 0px #00000066;
+  --ds-shadow-md: 0px 12px 40px 0px #00000066;
+  --ds-shadow-lg: 0px 24px 60px 0px #00000066;
+  --ds-shadow-glow: 0px 4px 18px 0px #e06c7559; /** Coral focus/hover glow */
+  --ds-shadow-none: 0px 0px 0px 0px transparent;
+  --ds-space-0: 0rem;
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.5rem;
+  --ds-space-6: 2rem;
+  --ds-space-7: 3rem;
+  --ds-space-8: 4rem;
+  --ds-space-9: 6rem;
+  --ds-font-family-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ds-font-weight-regular: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+  --ds-font-size-xs: 0.75rem;
+  --ds-font-size-sm: 0.875rem;
+  --ds-font-size-base: 1rem;
+  --ds-font-size-lg: 1.25rem;
+  --ds-font-size-xl: 1.5rem;
+  --ds-font-size-2xl: 2rem;
+  --ds-font-size-3xl: 2.75rem;
+  --ds-font-size-4xl: 3.25rem;
+  --ds-font-line-height-tight: 1.12;
+  --ds-font-line-height-snug: 1.3;
+  --ds-font-line-height-normal: 1.6;
+  --ds-font-letter-spacing-tight: -0.01em;
+  --ds-font-letter-spacing-normal: 0em;
+  --ds-font-letter-spacing-wide: 0.08em;
+  --ds-color-bg-canvas: var(--ds-color-palette-ink);
+  --ds-color-bg-surface: var(--ds-color-palette-void);
+  --ds-color-bg-code: var(--ds-color-palette-black);
+  --ds-color-fg-default: var(--ds-color-palette-cyan);
+  --ds-color-fg-heading: var(--ds-color-palette-cyan);
+  --ds-color-fg-muted: var(--ds-color-palette-slate);
+  --ds-color-fg-on-accent: var(--ds-color-palette-white);
+  --ds-color-accent-primary: var(--ds-color-palette-coral);
+  --ds-color-accent-secondary: var(--ds-color-palette-coral-light);
+  --ds-color-border-default: var(--ds-color-palette-border);
+  --ds-color-border-strong: var(--ds-color-palette-coral);
+  --ds-color-feedback-success: var(--ds-color-palette-green);
+  --ds-color-feedback-warning: var(--ds-color-palette-gold);
+  --ds-color-feedback-danger: var(--ds-color-palette-coral);
+  --ds-color-feedback-info: var(--ds-color-palette-cyan);
+  --ds-button-radius: var(--ds-radius-lg);
+  --ds-card-radius: var(--ds-radius-md);
+}
