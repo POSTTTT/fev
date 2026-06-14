@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# OS
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Secrets / local env (keep the example template)
+.env
+.env.*
+!.env.example
+
+# Local design/planning docs — not for the repo
+SPEC.md
+CONVERSATION.md
