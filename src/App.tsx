@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
-import { classify, buildPreviewDoc, type LoadedFile } from "./preview";
+import { classify, buildPreview, type LoadedFile } from "./preview";
 import "./App.css";
 
 const RECENTS_KEY = "fev.recents";
@@ -71,7 +71,7 @@ function App() {
   }, []);
 
   const kind = file ? classify(file.ext) : null;
-  const doc = file ? buildPreviewDoc(file) : null;
+  const preview = file ? buildPreview(file) : null;
 
   return (
     <div className="app">
@@ -114,25 +114,36 @@ function App() {
 
             {error && <div className="error">{error}</div>}
 
-            {doc !== null && (
+            {/* Real .html served over fev:// so relative assets resolve. Its
+                own origin (distinct from the app) makes allow-same-origin safe
+                here, enabling localStorage/fonts the page may use. */}
+            {preview?.mode === "src" && (
+              <iframe
+                key={preview.url}
+                className="frame"
+                title="preview"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                src={preview.url}
+              />
+            )}
+
+            {/* Generated docs (React shell, CSS sample) stay opaque-origin so
+                artifact code can't reach the parent app. */}
+            {preview?.mode === "srcdoc" && (
               <iframe
                 className="frame"
                 title="preview"
                 sandbox="allow-scripts allow-forms allow-popups allow-modals"
-                srcDoc={doc}
+                srcDoc={preview.doc}
               />
             )}
 
-            {doc === null && (
+            {preview === null && (
               <div className="notyet">
                 <p>
-                  <b>{file.ext}</b> preview not available yet.
+                  <b>{file.ext}</b> preview not supported.
                 </p>
-                <p className="muted">
-                  {kind === "react"
-                    ? "JSX/TSX rendering lands in Phase 2 (swc transpile)."
-                    : "Unsupported file type."}
-                </p>
+                <p className="muted">Try a .html, .jsx, .tsx, or .css file.</p>
                 <pre className="source">{file.content.slice(0, 4000)}</pre>
               </div>
             )}

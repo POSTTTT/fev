@@ -28,20 +28,40 @@ export function classify(ext: string): FileKind {
   }
 }
 
-// Build the document loaded into the preview iframe.
-// Returns null when the kind cannot be rendered yet.
-export function buildPreviewDoc(file: LoadedFile): string | null {
+// How the preview iframe should load a file.
+//  - "src":    point the iframe at the fev:// protocol so relative assets and
+//              @import chains resolve from disk (real .html files).
+//  - "srcdoc": inline a generated document (React shell, CSS sample).
+export type Preview =
+  | { mode: "src"; url: string }
+  | { mode: "srcdoc"; doc: string }
+  | null;
+
+export function buildPreview(file: LoadedFile): Preview {
   const kind = classify(file.ext);
   switch (kind) {
     case "html":
-      return file.content;
+      return { mode: "src", url: fevUrl(file.path) };
     case "react":
-      return buildReactDoc(file.name, file.content);
+      return { mode: "srcdoc", doc: buildReactDoc(file.name, file.content) };
     case "css":
-      return cssPreviewDoc(file.content);
+      return { mode: "srcdoc", doc: cssPreviewDoc(file.content) };
     default:
       return null;
   }
+}
+
+// Turn an absolute filesystem path into a fev:// URL. Slashes stay literal so
+// the webview can resolve relative refs; each segment is percent-encoded so
+// drive colons, spaces, etc. survive. Windows serves custom schemes over
+// http://<scheme>.localhost.
+function fevUrl(path: string): string {
+  const norm = path.replace(/\\/g, "/");
+  const encoded = norm.split("/").map(encodeURIComponent).join("/");
+  const isWindows = navigator.userAgent.includes("Windows");
+  return isWindows
+    ? `http://fev.localhost/${encoded}`
+    : `fev://localhost/${encoded}`;
 }
 
 // Show the stylesheet applied to a small sample of common elements.
