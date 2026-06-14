@@ -49,6 +49,12 @@ html,
   font-weight: var(--ds-font-weight-bold);
   letter-spacing: var(--ds-font-letter-spacing-tight);
   color: var(--ds-color-fg-heading);
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.brand:hover {
+  color: var(--ds-color-accent-primary);
 }
 
 /* Sidebar collapse / reveal toggles */
@@ -549,6 +555,64 @@ html,
 
 .tree-file.disabled:hover {
   background: transparent;
+}
+
+/* Modal (folder-info explainer) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fev-fade 0.15s ease both;
+}
+
+.modal-card {
+  width: min(440px, calc(100vw - 48px));
+  background: var(--ds-color-bg-surface);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--ds-space-6);
+  animation: fev-pop 0.15s ease both;
+}
+
+.modal-title {
+  margin: 0 0 var(--ds-space-4);
+  font-size: var(--ds-font-size-xl);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-color-fg-heading);
+}
+
+.modal-text {
+  margin: 0 0 var(--ds-space-3);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-font-line-height-normal);
+}
+
+.modal-text code {
+  color: var(--ds-color-accent-primary);
+  background: var(--ds-color-bg-code);
+  padding: 0 4px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.modal-check {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-fg-muted);
+  margin: var(--ds-space-4) 0;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-3);
 }
 
 /* Preview area */

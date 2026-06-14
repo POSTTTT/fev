@@ -73,6 +73,8 @@ function App() {
   const [devError, setDevError] = useState<string | null>(null);
   // Which output fills the preview area: an opened file, or the dev server.
   const [activeView, setActiveView] = useState<"file" | "dev">("file");
+  const [folderInfoOpen, setFolderInfoOpen] = useState(false);
+  const [dontShowFolderInfo, setDontShowFolderInfo] = useState(false);
 
   function pushRecentFolder(path: string) {
     setRecentFolders((prev) => {
@@ -99,6 +101,22 @@ function App() {
   async function openFolder() {
     const selected = await open({ directory: true });
     if (typeof selected === "string") selectFolder(selected);
+  }
+
+  // Show the explainer modal before the picker, unless dismissed before.
+  function requestOpenFolder() {
+    if (localStorage.getItem("fev.hideFolderInfo") === "1") {
+      openFolder();
+    } else {
+      setDontShowFolderInfo(false);
+      setFolderInfoOpen(true);
+    }
+  }
+
+  function confirmFolderInfo() {
+    if (dontShowFolderInfo) localStorage.setItem("fev.hideFolderInfo", "1");
+    setFolderInfoOpen(false);
+    openFolder();
   }
 
   const folderName = (p: string) => p.split(/[/\\]/).filter(Boolean).pop() ?? p;
@@ -143,6 +161,14 @@ function App() {
   function clearFolder() {
     stopDev();
     setRootDir(null);
+  }
+
+  // Clicking the F.E.V brand returns to the empty first screen.
+  function goHome() {
+    setFile(null);
+    setError(null);
+    setActiveView("file");
+    setMenuPath(null);
   }
 
   async function loadPath(path: string) {
@@ -381,6 +407,53 @@ function App() {
 
       {menuEl}
 
+      {folderInfoOpen && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setFolderInfoOpen(false)}
+        >
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">Opening a folder</h2>
+            <p className="modal-text">
+              Browse a folder's files and click any <b>.html / .jsx / .tsx / .css</b>{" "}
+              to preview it.
+            </p>
+            <p className="modal-text">
+              If the folder is a real front-end project (has a <code>dev</code>{" "}
+              script), F.E.V can <b>run its dev server</b> and show the live app —
+              no terminal needed.
+            </p>
+            <p className="modal-text muted">
+              F.E.V never changes your project. Dependencies must already be
+              installed (<code>node_modules</code>); if they're missing it will
+              tell you to run <code>install</code> yourself. The dev server stops
+              when you press Stop, Clear, or close the app.
+            </p>
+
+            <label className="modal-check">
+              <input
+                type="checkbox"
+                checked={dontShowFolderInfo}
+                onChange={(e) => setDontShowFolderInfo(e.target.checked)}
+              />
+              Don't show this again
+            </label>
+
+            <div className="modal-actions">
+              <button
+                className="run-btn stop"
+                onClick={() => setFolderInfoOpen(false)}
+              >
+                Cancel
+              </button>
+              <button className="open-btn" onClick={confirmFolderInfo}>
+                Choose folder…
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!sidebarOpen && (
         <button
           className="reveal-btn"
@@ -394,7 +467,9 @@ function App() {
       {sidebarOpen && (
         <aside className="sidebar" style={{ width: sidebarWidth }}>
           <div className="brand-row">
-            <div className="brand">F.E.V</div>
+            <div className="brand" onClick={goHome} title="Home — clear preview">
+              F.E.V
+            </div>
             <button
               className="collapse-btn"
               title="Hide sidebar"
@@ -406,13 +481,16 @@ function App() {
           <button className="open-btn" onClick={openDialog}>
             Open file…
           </button>
+          <button className="open-folder-btn" onClick={requestOpenFolder}>
+            Open folder…
+          </button>
 
           <div className="tabs">
             <button
               className={`tab${view === "recent" ? " active" : ""}`}
               onClick={() => setView("recent")}
             >
-              Recent
+              File
             </button>
             <button
               className={`tab${view === "files" ? " active" : ""}`}
@@ -435,10 +513,6 @@ function App() {
 
           {view === "files" && (
             <div className="files-pane">
-              <button className="open-folder-btn" onClick={openFolder}>
-                {rootDir ? "Open another folder…" : "Open folder…"}
-              </button>
-
               {!rootDir && recentFolders.length > 0 && (
                 <div className="recents-scroll">
                   <div className="recents-group-label">Recent folders</div>
