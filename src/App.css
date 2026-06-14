@@ -138,6 +138,32 @@ html,
   margin-top: var(--ds-space-2);
 }
 
+/* Scroll region holding the grouped recent lists. Scrolls, but the scrollbar
+   is hidden for a cleaner look. */
+.recents-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.recents-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.recents-group-label {
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--ds-color-accent-primary);
+  opacity: 0.8;
+  padding: 0 var(--ds-space-2);
+  margin-bottom: var(--ds-space-1);
+}
+
 .recents {
   list-style: none;
   margin: 0;
@@ -182,13 +208,13 @@ html,
 
 .kebab {
   flex-shrink: 0;
-  opacity: 0;
+  opacity: 0.45;
   border: none;
   background: transparent;
   color: var(--ds-color-fg-muted);
   font-size: var(--ds-font-size-lg);
   line-height: 1;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: var(--ds-radius-sm);
   cursor: pointer;
 }
@@ -204,22 +230,23 @@ html,
 }
 
 .menu {
-  position: absolute;
-  top: 100%;
-  right: 6px;
-  z-index: 20;
-  margin-top: 2px;
+  /* Fixed + JS-positioned so the sidebar's scroll overflow can't clip it. */
+  position: fixed;
+  z-index: 1000;
   background: var(--ds-color-bg-surface);
   border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-md);
-  box-shadow: var(--ds-shadow-md);
+  box-shadow: var(--ds-shadow-lg);
   padding: var(--ds-space-1);
   display: flex;
   flex-direction: column;
-  min-width: 120px;
+  min-width: 190px;
 }
 
 .menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
   font-family: var(--ds-font-family-mono);
   text-align: left;
   background: transparent;
@@ -231,8 +258,22 @@ html,
   font-size: var(--ds-font-size-sm);
 }
 
+.menu button svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
 .menu button:hover {
   background: var(--ds-color-bg-code);
+}
+
+/* Divider before the destructive action. */
+.menu-sep {
+  height: 1px;
+  margin: var(--ds-space-1) var(--ds-space-2);
+  background: var(--ds-color-border-default);
 }
 
 .menu button.danger {
@@ -463,9 +504,9 @@ html,
   transform: translateY(0) scale(0.98);
 }
 
-/* Kebab menu pops from its corner. */
+/* Kebab menu pops open from its top-left corner. */
 .menu {
-  transform-origin: top right;
+  transform-origin: top left;
   animation: fev-pop 0.13s ease both;
 }
 

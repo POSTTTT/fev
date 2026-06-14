@@ -37,6 +37,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [recents, setRecents] = useState<Recent[]>(loadRecents);
   const [menuPath, setMenuPath] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [editPath, setEditPath] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -130,12 +131,23 @@ function App() {
     };
   }, []);
 
-  // Close the kebab menu when clicking anywhere else.
+  // Close the kebab menu when clicking outside it (but not the click that
+  // opened it, nor clicks on the menu/kebab themselves).
   useEffect(() => {
     if (menuPath === null) return;
-    const close = () => setMenuPath(null);
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
+    const close = (ev: MouseEvent) => {
+      const t = ev.target as HTMLElement | null;
+      if (t && (t.closest(".menu") || t.closest(".kebab"))) return;
+      setMenuPath(null);
+    };
+    // Defer attaching so the opening click doesn't immediately close it.
+    const id = window.setTimeout(() => {
+      document.addEventListener("mousedown", close);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener("mousedown", close);
+    };
   }, [menuPath]);
 
   // Drag the sidebar's right edge to resize. Sidebar is leftmost, so the
@@ -169,10 +181,106 @@ function App() {
   const kind = file ? classify(file.ext) : null;
   const preview = file ? buildPreview(file) : null;
 
+  // Group recents by file suffix, ordered with the common types first.
+  const EXT_ORDER = ["html", "htm", "jsx", "tsx", "js", "ts", "css"];
+  const extOf = (r: Recent) => r.name.split(".").pop()?.toLowerCase() ?? "";
+  const groupedRecents = (() => {
+    const groups = new Map<string, Recent[]>();
+    for (const r of recents) {
+      const e = extOf(r);
+      if (!groups.has(e)) groups.set(e, []);
+      groups.get(e)!.push(r);
+    }
+    const rank = (e: string) => {
+      const i = EXT_ORDER.indexOf(e);
+      return i === -1 ? EXT_ORDER.length : i;
+    };
+    return [...groups.entries()].sort(
+      ([a], [b]) => rank(a) - rank(b) || a.localeCompare(b),
+    );
+  })();
+
+  const renderRecent = (r: Recent) => (
+    <li
+      key={r.path}
+      className={file?.path === r.path ? "active" : ""}
+      title={r.path}
+      onClick={() => editPath !== r.path && loadPath(r.path)}
+    >
+      {editPath === r.path ? (
+        <input
+          className="rename-input"
+          autoFocus
+          value={editValue}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commitRename();
+            if (e.key === "Escape") setEditPath(null);
+          }}
+          onBlur={commitRename}
+        />
+      ) : (
+        <>
+          <span className="label">{displayName(r)}</span>
+          <button
+            className="kebab"
+            title="More"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (menuPath === r.path) {
+                setMenuPath(null);
+                return;
+              }
+              const rect = e.currentTarget.getBoundingClientRect();
+              const MENU_W = 190;
+              const MENU_H = 140;
+              const x = Math.min(rect.right + 4, window.innerWidth - MENU_W - 8);
+              const y = Math.min(rect.bottom + 4, window.innerHeight - MENU_H);
+              setMenuPos({ x, y });
+              setMenuPath(r.path);
+            }}
+          >
+            ⋮
+          </button>
+        </>
+      )}
+    </li>
+  );
+
+  // The kebab menu is rendered at the app root (not inside the list item):
+  // a transform on .recents li would otherwise become the containing block
+  // for this position:fixed menu and the sidebar overflow would clip it.
+  const menuRecent = menuPath ? recents.find((r) => r.path === menuPath) : null;
+  const menuEl =
+    menuRecent && menuPos ? (
+      <div
+        className="menu"
+        style={{ top: menuPos.y, left: menuPos.x }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={() => openLocation(menuRecent.path)}>
+          <IconLocation />
+          Open file location
+        </button>
+        <button onClick={() => startRename(menuRecent)}>
+          <IconRename />
+          Rename
+        </button>
+        <div className="menu-sep" />
+        <button className="danger" onClick={() => removeRecent(menuRecent.path)}>
+          <IconRemove />
+          Remove
+        </button>
+      </div>
+    ) : null;
+
   return (
     <div className={`app${sidebarOpen ? "" : " app--collapsed"}`}>
       {/* Transparent overlay during drag so the iframe doesn't eat mouse moves. */}
       {isResizing && <div className="resize-overlay" />}
+
+      {menuEl}
 
       {!sidebarOpen && (
         <button
@@ -200,58 +308,15 @@ function App() {
             Open file…
           </button>
 
-        <div className="recents-label">Recent</div>
-        <ul className="recents">
-          {recents.map((r) => (
-            <li
-              key={r.path}
-              className={file?.path === r.path ? "active" : ""}
-              title={r.path}
-              onClick={() => editPath !== r.path && loadPath(r.path)}
-            >
-              {editPath === r.path ? (
-                <input
-                  className="rename-input"
-                  autoFocus
-                  value={editValue}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") commitRename();
-                    if (e.key === "Escape") setEditPath(null);
-                  }}
-                  onBlur={commitRename}
-                />
-              ) : (
-                <>
-                  <span className="label">{displayName(r)}</span>
-                  <button
-                    className="kebab"
-                    title="More"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMenuPath(menuPath === r.path ? null : r.path);
-                    }}
-                  >
-                    ⋮
-                  </button>
-                </>
-              )}
-
-              {menuPath === r.path && (
-                <div className="menu" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => openLocation(r.path)}>
-                    Open file location
-                  </button>
-                  <button onClick={() => startRename(r)}>Rename</button>
-                  <button className="danger" onClick={() => removeRecent(r.path)}>
-                    Remove
-                  </button>
-                </div>
-              )}
-            </li>
-          ))}
-          </ul>
+          <div className="recents-label">Recent</div>
+          <div className="recents-scroll">
+            {groupedRecents.map(([ext, items]) => (
+              <div className="recents-group" key={ext}>
+                <div className="recents-group-label">.{ext || "file"}</div>
+                <ul className="recents">{items.map(renderRecent)}</ul>
+              </div>
+            ))}
+          </div>
         </aside>
       )}
 
@@ -318,6 +383,42 @@ function App() {
         )}
       </main>
     </div>
+  );
+}
+
+// Menu icons — line style (stroke=currentColor) to match the mono theme.
+const svg = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  viewBox: "0 0 16 16",
+};
+
+function IconLocation() {
+  return (
+    <svg {...svg}>
+      <path d="M8 1.8a3.6 3.6 0 0 0-3.6 3.6c0 2.6 3.6 6.8 3.6 6.8s3.6-4.2 3.6-6.8A3.6 3.6 0 0 0 8 1.8z" />
+      <circle cx="8" cy="5.4" r="1.4" />
+    </svg>
+  );
+}
+
+function IconRename() {
+  return (
+    <svg {...svg}>
+      <path d="M2.5 11.5 11 3l1.9 1.9-8.5 8.5-2.4.5z" />
+      <path d="M10.2 3.8 12.2 5.8" />
+    </svg>
+  );
+}
+
+function IconRemove() {
+  return (
+    <svg {...svg}>
+      <path d="M3 4.3h10M6.4 4.3V2.7h3.2v1.6M4.6 4.3l.6 9h5.6l.6-9" />
+    </svg>
   );
 }
 
