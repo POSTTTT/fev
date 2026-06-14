@@ -37,3 +37,8 @@ Thumbs.db
 # Local design/planning docs — not for the repo
 SPEC.md
 CONVERSATION.md
+
+# Build artifacts / installers — don't commit binaries
+*.exe
+*.msi
+release/

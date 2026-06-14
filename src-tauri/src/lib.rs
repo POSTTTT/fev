@@ -351,8 +351,6 @@ pub fn run() {
         .manage(DevState(std::sync::Mutex::new(None)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init())
         // Serve the previewed file and its relative assets. The full absolute
         // path travels in the URL path (slashes preserved), so the webview
         // resolves relative refs and @import chains itself — including paths
@@ -362,9 +360,12 @@ pub fn run() {
             let raw = request.uri().path();
             let fs_path = percent_decode(raw.trim_start_matches('/'));
             match std::fs::read(&fs_path) {
+                // No wildcard CORS: assets load same-origin from the preview
+                // iframe; cross-origin JS must not be able to read files back.
+                // nosniff so the declared Content-Type is honored.
                 Ok(bytes) => tauri::http::Response::builder()
                     .header("Content-Type", mime_for(&fs_path))
-                    .header("Access-Control-Allow-Origin", "*")
+                    .header("X-Content-Type-Options", "nosniff")
                     .body(bytes)
                     .unwrap(),
                 Err(e) => tauri::http::Response::builder()
