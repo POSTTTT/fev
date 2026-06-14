@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Secrets / local env (keep the example template)
+.env
+.env.*
+!.env.example
+
+# Local design/planning docs — not for the repo
+SPEC.md
+CONVERSATION.md
+
+# Build artifacts / installers — don't commit binaries
+*.exe
+*.msi
+release/

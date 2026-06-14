@@ -1,0 +1,12 @@
+# Windows schannel sometimes can't reach the cert revocation server, which
+# aborts crates.io index fetches with CRYPT_E_NO_REVOCATION_CHECK. Skip the
+# revocation check so cargo can fetch on networks/proxies that block it.
+[http]
+check-revoke = false
+
+# The repo lives inside OneDrive. OneDrive sync + Defender lock target/*.dll
+# files mid-link, causing LNK1105 "cannot close file" (error 1224 =
+# USER_MAPPED_FILE). Build outside OneDrive (LocalAppData is not synced).
+# Machine-local path; adjust if cloning to another machine.
+[build]
+target-dir = "C:/Users/post9/AppData/Local/fev-build"

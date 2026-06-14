@@ -1,0 +1,888 @@
+/* F.E.V shell — styled with the monospace design system (tokens.css). */
+
+:root {
+  font-family: var(--ds-font-family-mono);
+  font-size: 14px;
+  color: var(--ds-color-fg-default);
+  background: var(--ds-color-bg-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body,
+html,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+.app {
+  position: relative;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--ds-color-bg-canvas);
+}
+
+/* Sidebar */
+.sidebar {
+  flex-shrink: 0;
+  background: var(--ds-color-bg-surface);
+  display: flex;
+  flex-direction: column;
+  padding: var(--ds-space-4);
+  gap: var(--ds-space-4);
+  overflow: hidden;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: var(--ds-font-size-xl);
+  font-weight: var(--ds-font-weight-bold);
+  letter-spacing: var(--ds-font-letter-spacing-tight);
+  color: var(--ds-color-fg-heading);
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.brand:hover {
+  color: var(--ds-color-accent-primary);
+}
+
+/* Sidebar collapse / reveal toggles */
+.collapse-btn,
+.reveal-btn {
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  background: var(--ds-color-bg-code);
+  color: var(--ds-color-fg-muted);
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  font-family: var(--ds-font-family-mono);
+  line-height: 1;
+  padding: 3px 8px;
+}
+
+.collapse-btn:hover,
+.reveal-btn:hover {
+  color: var(--ds-color-accent-primary);
+  border-color: var(--ds-color-border-strong);
+}
+
+.reveal-btn {
+  position: absolute;
+  top: var(--ds-space-3);
+  left: var(--ds-space-3);
+  z-index: 30;
+}
+
+/* Keep the topbar's filename clear of the floating reveal button. */
+.app--collapsed .topbar {
+  padding-left: 48px;
+}
+
+/* Drag handle between sidebar and preview */
+.resizer {
+  flex-shrink: 0;
+  width: 5px;
+  cursor: col-resize;
+  background: var(--ds-color-border-default);
+  opacity: 0.35;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+
+.resizer:hover {
+  opacity: 1;
+  background: var(--ds-color-border-strong);
+}
+
+/* Covers the whole window while dragging so the preview iframe doesn't
+   capture the mouse and stall the resize. */
+.resize-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  cursor: col-resize;
+}
+
+/* Buttons follow .ms-btn (primary = coral gradient) */
+.open-btn {
+  font-family: var(--ds-font-family-mono);
+  font-weight: var(--ds-font-weight-semibold);
+  font-size: var(--ds-font-size-sm);
+  line-height: 1;
+  color: var(--ds-color-fg-on-accent);
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-accent-primary),
+    var(--ds-color-accent-secondary)
+  );
+  border: none;
+  border-radius: var(--ds-button-radius);
+  padding: var(--ds-button-padding-y) var(--ds-button-padding-x);
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.open-btn:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+
+.recents-label {
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-fg-muted);
+  margin-top: var(--ds-space-2);
+}
+
+/* Scroll region holding the grouped recent lists. Scrolls, but the scrollbar
+   is hidden for a cleaner look. */
+.recents-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+.recents-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.recents-group-label {
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--ds-color-accent-primary);
+  opacity: 0.8;
+  padding: 0 var(--ds-space-2);
+  margin-bottom: var(--ds-space-1);
+}
+
+.recents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.recents li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-2) var(--ds-space-2);
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  color: var(--ds-color-fg-default);
+  border: var(--ds-border-width-thin) solid transparent;
+}
+
+.recents li .label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recents li:hover {
+  background: var(--ds-color-bg-code);
+  border-color: var(--ds-color-border-default);
+}
+
+.recents li.active {
+  background: var(--ds-color-bg-code);
+  border-color: var(--ds-color-border-strong);
+  color: var(--ds-color-fg-heading);
+}
+
+.muted {
+  color: var(--ds-color-fg-muted);
+  cursor: default;
+}
+
+.kebab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  opacity: 0.45;
+  border: none;
+  background: transparent;
+  color: var(--ds-color-fg-muted);
+  font-size: var(--ds-font-size-lg);
+  line-height: 1;
+  padding: 0;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+}
+
+.kebab svg {
+  width: 13px;
+  height: 13px;
+}
+
+.recents li:hover .kebab,
+.tree-row:hover .kebab,
+.kebab:hover {
+  opacity: 1;
+}
+
+.kebab:hover {
+  background: var(--ds-color-bg-surface);
+  color: var(--ds-color-accent-primary);
+}
+
+.menu {
+  /* Fixed + JS-positioned so the sidebar's scroll overflow can't clip it. */
+  position: fixed;
+  z-index: 1000;
+  background: var(--ds-color-bg-surface);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--ds-space-1);
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+}
+
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  font-family: var(--ds-font-family-mono);
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--ds-color-fg-default);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  font-size: var(--ds-font-size-sm);
+}
+
+.menu button svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.menu button:hover {
+  background: var(--ds-color-bg-code);
+}
+
+/* Divider before the destructive action. */
+.menu-sep {
+  height: 1px;
+  margin: var(--ds-space-1) var(--ds-space-2);
+  background: var(--ds-color-border-default);
+}
+
+.menu button.danger {
+  color: var(--ds-color-feedback-danger);
+}
+
+.menu button.danger:hover {
+  background: var(--ds-color-bg-code);
+}
+
+.rename-input {
+  flex: 1;
+  width: 100%;
+  font-family: var(--ds-font-family-mono);
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-color-fg-default);
+  font-size: var(--ds-font-size-sm);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  outline: none;
+  box-shadow: var(--ds-shadow-glow);
+}
+
+/* Recent / Files tab toggle */
+.tabs {
+  display: flex;
+  gap: var(--ds-space-1);
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  padding: 3px;
+}
+
+.tab {
+  flex: 1;
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-fg-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-space-2);
+  cursor: pointer;
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.tab:hover {
+  color: var(--ds-color-fg-default);
+}
+
+.tab.active {
+  color: var(--ds-color-fg-heading);
+  background: var(--ds-color-bg-surface);
+}
+
+/* Files pane */
+.files-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.files-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.files-root {
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-accent-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.files-change {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--ds-color-fg-muted);
+  cursor: pointer;
+  border-radius: var(--ds-radius-sm);
+  padding: 2px 6px;
+}
+
+.files-change:hover {
+  color: var(--ds-color-accent-primary);
+}
+
+.files-clear {
+  flex-shrink: 0;
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-fg-muted);
+  background: transparent;
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.files-clear:hover {
+  color: var(--ds-color-feedback-danger);
+  border-color: var(--ds-color-feedback-danger);
+}
+
+.open-folder-btn {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-fg-default);
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-3);
+  cursor: pointer;
+}
+
+.open-folder-btn:hover {
+  border-color: var(--ds-color-border-strong);
+}
+
+/* Run / stop dev server */
+.run-btn {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-fg-on-accent);
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-feedback-success),
+    #7CFFA0
+  );
+  border: none;
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  cursor: pointer;
+  color: #08331a;
+}
+
+.run-btn:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.run-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.run-btn.stop {
+  background: var(--ds-color-bg-code);
+  color: var(--ds-color-feedback-danger);
+  border: var(--ds-border-width-thin) solid var(--ds-color-feedback-danger);
+}
+
+.run-note {
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-font-line-height-normal);
+}
+
+.run-note code {
+  color: var(--ds-color-accent-primary);
+  background: var(--ds-color-bg-code);
+  padding: 0 4px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.run-error {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-feedback-danger);
+  background: var(--ds-color-bg-code);
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-space-2);
+  white-space: pre-wrap;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.badge-dev {
+  color: var(--ds-color-feedback-success);
+  border-color: var(--ds-color-feedback-success);
+}
+
+.dev-url {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-fg-muted);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* File tree */
+.tree {
+  font-size: var(--ds-font-size-sm);
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 4px 8px;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--ds-color-fg-default);
+}
+
+.tree-row:hover {
+  background: var(--ds-color-bg-code);
+}
+
+.tree-row.active {
+  background: var(--ds-color-bg-code);
+  color: var(--ds-color-fg-heading);
+}
+
+.tree-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-caret {
+  display: inline-block;
+  width: 10px;
+  flex-shrink: 0;
+  color: var(--ds-color-fg-muted);
+  transition: transform 0.12s ease;
+}
+
+.tree-caret.open {
+  transform: rotate(90deg);
+}
+
+.tree-dir .tree-name {
+  color: var(--ds-color-fg-default);
+}
+
+.tree-file {
+  padding-left: 18px;
+}
+
+.tree-file.disabled {
+  color: var(--ds-color-fg-muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tree-file.disabled:hover {
+  background: transparent;
+}
+
+/* Modal (folder-info explainer) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fev-fade 0.15s ease both;
+}
+
+.modal-card {
+  width: min(440px, calc(100vw - 48px));
+  background: var(--ds-color-bg-surface);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-lg);
+  padding: var(--ds-space-6);
+  animation: fev-pop 0.15s ease both;
+}
+
+.modal-title {
+  margin: 0 0 var(--ds-space-4);
+  font-size: var(--ds-font-size-xl);
+  font-weight: var(--ds-font-weight-bold);
+  color: var(--ds-color-fg-heading);
+}
+
+.modal-text {
+  margin: 0 0 var(--ds-space-3);
+  font-size: var(--ds-font-size-sm);
+  line-height: var(--ds-font-line-height-normal);
+}
+
+.modal-text code {
+  color: var(--ds-color-accent-primary);
+  background: var(--ds-color-bg-code);
+  padding: 0 4px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.modal-check {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-fg-muted);
+  margin: var(--ds-space-4) 0;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-3);
+}
+
+/* Preview area */
+.preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dropzone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  border: var(--ds-border-width-thick) dashed var(--ds-color-border-default);
+  margin: var(--ds-space-5);
+  border-radius: var(--ds-radius-lg);
+  color: var(--ds-color-fg-muted);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  background: var(--ds-color-bg-surface);
+  border-bottom: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+}
+
+.filename {
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-fg-heading);
+}
+
+/* Type badge — bracketed mono tag (.ms-tag look) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--ds-color-fg-muted);
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-space-1) var(--ds-space-2);
+}
+
+.badge::before {
+  content: "[";
+  margin-right: 0.4em;
+  opacity: 0.55;
+}
+.badge::after {
+  content: "]";
+  margin-left: 0.4em;
+  opacity: 0.55;
+}
+
+.badge-html {
+  color: var(--ds-color-feedback-warning);
+  border-color: var(--ds-color-feedback-warning);
+}
+.badge-react {
+  color: var(--ds-color-feedback-info);
+  border-color: var(--ds-color-feedback-info);
+}
+.badge-css {
+  color: var(--ds-color-accent-primary);
+  border-color: var(--ds-color-accent-primary);
+}
+
+.frame {
+  flex: 1;
+  border: none;
+  width: 100%;
+  background: #fff;
+}
+
+.error {
+  background: var(--ds-color-bg-code);
+  color: var(--ds-color-feedback-danger);
+  border-bottom: var(--ds-border-width-thin) solid var(--ds-color-feedback-danger);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+}
+
+.notyet {
+  padding: var(--ds-space-5);
+  overflow: auto;
+}
+
+.source {
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-4);
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-fg-default);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion — entrances + micro-interactions. Kept subtle and snappy.
+   Honors prefers-reduced-motion (see bottom).
+--------------------------------------------------------------------------- */
+
+@keyframes fev-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fev-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fev-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fev-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Sidebar slides in; its inner blocks rise in sequence. */
+.sidebar {
+  animation: fev-fade 0.18s ease both;
+}
+
+.brand,
+.open-btn,
+.recents-label {
+  animation: fev-rise 0.28s ease both;
+}
+
+.open-btn {
+  animation-delay: 0.04s;
+}
+.recents-label {
+  animation-delay: 0.08s;
+}
+
+/* Recent rows stagger in and shift on hover. */
+.recents li {
+  animation: fev-rise 0.26s ease both;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s ease;
+}
+
+.recents li:hover {
+  transform: translateX(2px);
+}
+
+.recents li:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.recents li:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.recents li:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.recents li:nth-child(4) {
+  animation-delay: 0.16s;
+}
+.recents li:nth-child(n + 5) {
+  animation-delay: 0.2s;
+}
+
+/* Press feedback on the primary button. */
+.open-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Kebab menu pops open from its top-left corner. */
+.menu {
+  transform-origin: top left;
+  animation: fev-pop 0.13s ease both;
+}
+
+.menu button {
+  transition: background 0.12s ease, padding-left 0.12s ease;
+}
+.menu button:hover {
+  padding-left: calc(var(--ds-space-3) + 3px);
+}
+
+/* Toggle buttons nudge on hover. */
+.collapse-btn,
+.reveal-btn {
+  transition:
+    color 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s ease;
+}
+.collapse-btn:hover {
+  transform: translateX(-2px);
+}
+.reveal-btn:hover {
+  transform: translateX(2px);
+}
+
+/* Topbar drops in; preview fades up when a file loads. */
+.topbar {
+  animation: fev-slide-down 0.24s ease both;
+}
+
+.frame,
+.notyet {
+  animation: fev-fade 0.3s ease both;
+}
+
+.dropzone {
+  animation: fev-fade 0.3s ease both;
+}
+
+/* The dropzone hint gently floats. */
+.dropzone p:first-child {
+  animation: fev-float 3.2s ease-in-out infinite;
+}
+
+@keyframes fev-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
