@@ -141,6 +141,8 @@ html,
 /* Scroll region holding the grouped recent lists. Scrolls, but the scrollbar
    is hidden for a cleaner look. */
 .recents-scroll {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
@@ -208,18 +210,29 @@ html,
 
 .kebab {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   opacity: 0.45;
   border: none;
   background: transparent;
   color: var(--ds-color-fg-muted);
   font-size: var(--ds-font-size-lg);
   line-height: 1;
-  padding: 2px 6px;
+  padding: 0;
   border-radius: var(--ds-radius-sm);
   cursor: pointer;
 }
 
+.kebab svg {
+  width: 13px;
+  height: 13px;
+}
+
 .recents li:hover .kebab,
+.tree-row:hover .kebab,
 .kebab:hover {
   opacity: 1;
 }
@@ -296,6 +309,246 @@ html,
   padding: var(--ds-space-1) var(--ds-space-2);
   outline: none;
   box-shadow: var(--ds-shadow-glow);
+}
+
+/* Recent / Files tab toggle */
+.tabs {
+  display: flex;
+  gap: var(--ds-space-1);
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  padding: 3px;
+}
+
+.tab {
+  flex: 1;
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-fg-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-space-2);
+  cursor: pointer;
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.tab:hover {
+  color: var(--ds-color-fg-default);
+}
+
+.tab.active {
+  color: var(--ds-color-fg-heading);
+  background: var(--ds-color-bg-surface);
+}
+
+/* Files pane */
+.files-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.files-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.files-root {
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-accent-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.files-change {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--ds-color-fg-muted);
+  cursor: pointer;
+  border-radius: var(--ds-radius-sm);
+  padding: 2px 6px;
+}
+
+.files-change:hover {
+  color: var(--ds-color-accent-primary);
+}
+
+.files-clear {
+  flex-shrink: 0;
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  color: var(--ds-color-fg-muted);
+  background: transparent;
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.files-clear:hover {
+  color: var(--ds-color-feedback-danger);
+  border-color: var(--ds-color-feedback-danger);
+}
+
+.open-folder-btn {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+  color: var(--ds-color-fg-default);
+  background: var(--ds-color-bg-code);
+  border: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-3);
+  cursor: pointer;
+}
+
+.open-folder-btn:hover {
+  border-color: var(--ds-color-border-strong);
+}
+
+/* Run / stop dev server */
+.run-btn {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-fg-on-accent);
+  background: linear-gradient(
+    135deg,
+    var(--ds-color-feedback-success),
+    #7CFFA0
+  );
+  border: none;
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  cursor: pointer;
+  color: #08331a;
+}
+
+.run-btn:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.run-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.run-btn.stop {
+  background: var(--ds-color-bg-code);
+  color: var(--ds-color-feedback-danger);
+  border: var(--ds-border-width-thin) solid var(--ds-color-feedback-danger);
+}
+
+.run-note {
+  font-size: var(--ds-font-size-xs);
+  line-height: var(--ds-font-line-height-normal);
+}
+
+.run-note code {
+  color: var(--ds-color-accent-primary);
+  background: var(--ds-color-bg-code);
+  padding: 0 4px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.run-error {
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-feedback-danger);
+  background: var(--ds-color-bg-code);
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-space-2);
+  white-space: pre-wrap;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.badge-dev {
+  color: var(--ds-color-feedback-success);
+  border-color: var(--ds-color-feedback-success);
+}
+
+.dev-url {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-color-fg-muted);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* File tree */
+.tree {
+  font-size: var(--ds-font-size-sm);
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 4px 8px;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--ds-color-fg-default);
+}
+
+.tree-row:hover {
+  background: var(--ds-color-bg-code);
+}
+
+.tree-row.active {
+  background: var(--ds-color-bg-code);
+  color: var(--ds-color-fg-heading);
+}
+
+.tree-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-caret {
+  display: inline-block;
+  width: 10px;
+  flex-shrink: 0;
+  color: var(--ds-color-fg-muted);
+  transition: transform 0.12s ease;
+}
+
+.tree-caret.open {
+  transform: rotate(90deg);
+}
+
+.tree-dir .tree-name {
+  color: var(--ds-color-fg-default);
+}
+
+.tree-file {
+  padding-left: 18px;
+}
+
+.tree-file.disabled {
+  color: var(--ds-color-fg-muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tree-file.disabled:hover {
+  background: transparent;
 }
 
 /* Preview area */

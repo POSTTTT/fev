@@ -4,11 +4,20 @@ import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { classify, buildPreview, type LoadedFile } from "./preview";
+import { FileTree } from "./FileTree";
 import "./tokens.css";
 import "./App.css";
 
 const RECENTS_KEY = "fev.recents";
 const MAX_RECENTS = 8;
+
+interface ProjectInfo {
+  is_project: boolean;
+  dev_script: string | null;
+  package_manager: string;
+  has_node_modules: boolean;
+  name: string | null;
+}
 
 interface Recent {
   path: string;
@@ -46,9 +55,99 @@ function App() {
   );
   const resizing = useRef(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [view, setView] = useState<"recent" | "files">("recent");
+  // Folder selection is intentionally not restored on launch.
+  const [rootDir, setRootDir] = useState<string | null>(null);
+  const [recentFolders, setRecentFolders] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("fev.recentFolders") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
+  const [project, setProject] = useState<ProjectInfo | null>(null);
+  const [devUrl, setDevUrl] = useState<string | null>(null);
+  const [devStatus, setDevStatus] = useState<
+    "idle" | "starting" | "running" | "error"
+  >("idle");
+  const [devError, setDevError] = useState<string | null>(null);
+  // Which output fills the preview area: an opened file, or the dev server.
+  const [activeView, setActiveView] = useState<"file" | "dev">("file");
+
+  function pushRecentFolder(path: string) {
+    setRecentFolders((prev) => {
+      const next = [path, ...prev.filter((p) => p !== path)].slice(0, 6);
+      localStorage.setItem("fev.recentFolders", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function removeRecentFolder(path: string) {
+    setRecentFolders((prev) => {
+      const next = prev.filter((p) => p !== path);
+      localStorage.setItem("fev.recentFolders", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function selectFolder(path: string) {
+    setRootDir(path);
+    pushRecentFolder(path);
+    setView("files");
+  }
+
+  async function openFolder() {
+    const selected = await open({ directory: true });
+    if (typeof selected === "string") selectFolder(selected);
+  }
+
+  const folderName = (p: string) => p.split(/[/\\]/).filter(Boolean).pop() ?? p;
+
+  // When the folder changes, stop any running server and re-detect the project.
+  useEffect(() => {
+    setDevUrl(null);
+    setDevStatus("idle");
+    setDevError(null);
+    invoke("stop_dev").catch(() => {});
+    if (rootDir) {
+      invoke<ProjectInfo>("detect_project", { path: rootDir })
+        .then(setProject)
+        .catch(() => setProject(null));
+    } else {
+      setProject(null);
+    }
+  }, [rootDir]);
+
+  async function runDev() {
+    if (!rootDir) return;
+    setDevError(null);
+    setDevStatus("starting");
+    try {
+      const url = await invoke<string>("run_dev", { path: rootDir });
+      setDevUrl(url);
+      setDevStatus("running");
+      setActiveView("dev");
+    } catch (e) {
+      setDevError(String(e));
+      setDevStatus("error");
+    }
+  }
+
+  function stopDev() {
+    invoke("stop_dev").catch(() => {});
+    setDevUrl(null);
+    setDevStatus("idle");
+    setActiveView("file");
+  }
+
+  function clearFolder() {
+    stopDev();
+    setRootDir(null);
+  }
 
   async function loadPath(path: string) {
     setError(null);
+    setActiveView("file");
     try {
       const loaded = await invoke<LoadedFile>("read_file", { path });
       setFile(loaded);
@@ -308,15 +407,128 @@ function App() {
             Open file…
           </button>
 
-          <div className="recents-label">Recent</div>
-          <div className="recents-scroll">
-            {groupedRecents.map(([ext, items]) => (
-              <div className="recents-group" key={ext}>
-                <div className="recents-group-label">.{ext || "file"}</div>
-                <ul className="recents">{items.map(renderRecent)}</ul>
-              </div>
-            ))}
+          <div className="tabs">
+            <button
+              className={`tab${view === "recent" ? " active" : ""}`}
+              onClick={() => setView("recent")}
+            >
+              Recent
+            </button>
+            <button
+              className={`tab${view === "files" ? " active" : ""}`}
+              onClick={() => setView("files")}
+            >
+              Folder
+            </button>
           </div>
+
+          {view === "recent" && (
+            <div className="recents-scroll">
+              {groupedRecents.map(([ext, items]) => (
+                <div className="recents-group" key={ext}>
+                  <div className="recents-group-label">.{ext || "file"}</div>
+                  <ul className="recents">{items.map(renderRecent)}</ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {view === "files" && (
+            <div className="files-pane">
+              <button className="open-folder-btn" onClick={openFolder}>
+                {rootDir ? "Open another folder…" : "Open folder…"}
+              </button>
+
+              {!rootDir && recentFolders.length > 0 && (
+                <div className="recents-scroll">
+                  <div className="recents-group-label">Recent folders</div>
+                  {recentFolders.map((p) => (
+                    <div
+                      className="tree-row"
+                      key={p}
+                      title={p}
+                      onClick={() => selectFolder(p)}
+                    >
+                      <span className="tree-name">{folderName(p)}</span>
+                      <button
+                        className="kebab"
+                        title="Remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeRecentFolder(p);
+                        }}
+                      >
+                        <IconClose />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {rootDir && (
+                <>
+                  <div className="files-head">
+                    <span className="files-root" title={rootDir}>
+                      {rootDir.split(/[/\\]/).filter(Boolean).pop()}
+                    </span>
+                    <button
+                      className="files-clear"
+                      title="Clear folder & stop dev server"
+                      onClick={clearFolder}
+                    >
+                      Clear
+                    </button>
+                  </div>
+
+                  {project?.is_project && project.dev_script && (
+                    <>
+                      {!project.has_node_modules ? (
+                        <div className="run-note muted">
+                          ⚠ Dependencies not installed. Run{" "}
+                          <code>{project.package_manager} install</code> in the
+                          project first.
+                        </div>
+                      ) : devStatus === "running" ? (
+                        <>
+                          {activeView !== "dev" && (
+                            <button
+                              className="run-btn"
+                              onClick={() => setActiveView("dev")}
+                            >
+                              ▶ Show dev server
+                            </button>
+                          )}
+                          <button className="run-btn stop" onClick={stopDev}>
+                            ■ Stop dev server
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="run-btn"
+                          onClick={runDev}
+                          disabled={devStatus === "starting"}
+                          title="Run the project's dev server"
+                        >
+                          {devStatus === "starting"
+                            ? "Starting…"
+                            : "▶ Run dev server"}
+                        </button>
+                      )}
+                      {devError && <div className="run-error">{devError}</div>}
+                    </>
+                  )}
+
+                  <div className="recents-scroll">
+                    <FileTree
+                      rootDir={rootDir}
+                      onOpenFile={loadPath}
+                      activePath={file?.path}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </aside>
       )}
 
@@ -329,14 +541,35 @@ function App() {
       )}
 
       <main className="preview">
-        {!file && (
+        {activeView === "dev" && devUrl && (
+          <>
+            <div className="topbar">
+              <span className="filename">{project?.name || "dev server"}</span>
+              <span className="badge badge-dev">live</span>
+              <span className="dev-url" title={devUrl}>
+                {devUrl}
+              </span>
+              <button className="files-change" title="Stop" onClick={stopDev}>
+                ■
+              </button>
+            </div>
+            <iframe
+              className="frame"
+              title="dev"
+              src={devUrl}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+            />
+          </>
+        )}
+
+        {activeView !== "dev" && !file && (
           <div className="dropzone">
             <p>Drag a file here, or click <b>Open file…</b></p>
             <p className="muted">.html · .jsx · .tsx · .css</p>
           </div>
         )}
 
-        {file && (
+        {activeView !== "dev" && file && (
           <>
             <div className="topbar">
               <span className="filename">{file.name}</span>
@@ -418,6 +651,14 @@ function IconRemove() {
   return (
     <svg {...svg}>
       <path d="M3 4.3h10M6.4 4.3V2.7h3.2v1.6M4.6 4.3l.6 9h5.6l.6-9" />
+    </svg>
+  );
+}
+
+function IconClose() {
+  return (
+    <svg {...svg}>
+      <path d="M4 4l8 8M12 4l-8 8" />
     </svg>
   );
 }
