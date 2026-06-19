@@ -187,13 +187,19 @@ fn detect_project(path: String) -> ProjectInfo {
     info
 }
 
+/// Windows: spawn without flashing a console window.
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 /// Build a command that runs a package-manager subcommand in `dir`.
 /// On Windows npm/pnpm/yarn are .cmd shims, so go through `cmd /C`.
 fn pm_command(pm: &str, args: &[&str], dir: &str) -> std::process::Command {
     #[cfg(target_os = "windows")]
     let mut c = {
+        use std::os::windows::process::CommandExt;
         let mut c = std::process::Command::new("cmd");
         c.arg("/C").arg(pm);
+        c.creation_flags(CREATE_NO_WINDOW);
         c
     };
     #[cfg(not(target_os = "windows"))]
@@ -207,8 +213,10 @@ fn pm_command(pm: &str, args: &[&str], dir: &str) -> std::process::Command {
 fn kill_tree(child: &mut std::process::Child) {
     #[cfg(target_os = "windows")]
     {
+        use std::os::windows::process::CommandExt;
         let _ = std::process::Command::new("taskkill")
             .args(["/F", "/T", "/PID", &child.id().to_string()])
+            .creation_flags(CREATE_NO_WINDOW)
             .status();
     }
     let _ = child.kill();

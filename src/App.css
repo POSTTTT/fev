@@ -615,6 +615,124 @@ html,
   gap: var(--ds-space-3);
 }
 
+/* About / settings entry pinned to the sidebar's bottom-left */
+.sidebar-footer {
+  flex-shrink: 0;
+  border-top: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  padding-top: var(--ds-space-3);
+}
+
+.about-btn {
+  background: none;
+  border: none;
+  padding: var(--ds-space-1) 0;
+  color: var(--ds-color-fg-muted);
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+
+.about-btn:hover {
+  color: var(--ds-color-accent-primary);
+}
+
+.link {
+  color: var(--ds-color-accent-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.about-update {
+  min-height: 20px;
+  margin: var(--ds-space-2) 0 var(--ds-space-4);
+  font-size: var(--ds-font-size-sm);
+}
+
+.update-avail {
+  color: var(--ds-color-accent-primary);
+  font-weight: var(--ds-font-weight-semibold);
+}
+
+/* Sectioned settings dialog: left nav + content pane */
+.settings-card {
+  width: min(620px, calc(100vw - 48px));
+  padding: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+}
+
+.settings-nav {
+  flex-shrink: 0;
+  width: 160px;
+  background: var(--ds-color-bg-code);
+  border-right: var(--ds-border-width-thin) solid var(--ds-color-border-default);
+  padding: var(--ds-space-4) var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+
+.settings-nav-title {
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-semibold);
+  letter-spacing: var(--ds-font-letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--ds-color-fg-muted);
+  padding: 0 var(--ds-space-2) var(--ds-space-2);
+}
+
+.settings-nav-item {
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-space-2);
+  color: var(--ds-color-fg-default);
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-font-size-sm);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.settings-nav-item:hover {
+  background: var(--ds-color-bg-surface);
+}
+
+.settings-nav-item.active {
+  background: var(--ds-color-bg-surface);
+  color: var(--ds-color-accent-primary);
+}
+
+.settings-body {
+  flex: 1;
+  min-width: 0;
+  padding: var(--ds-space-6);
+}
+
+.settings-close {
+  position: absolute;
+  top: var(--ds-space-3);
+  right: var(--ds-space-3);
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-color-fg-muted);
+  cursor: pointer;
+}
+
+.settings-close:hover {
+  color: var(--ds-color-accent-primary);
+  background: var(--ds-color-bg-code);
+}
+
 /* Preview area */
 .preview {
   flex: 1;

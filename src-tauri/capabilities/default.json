@@ -5,8 +5,10 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "core:app:default",
     "opener:default",
     "opener:allow-reveal-item-in-dir",
+    "opener:allow-open-url",
     "dialog:default"
   ]
 }

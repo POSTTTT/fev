@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
-import { revealItemInDir } from "@tauri-apps/plugin-opener";
+import { revealItemInDir, openUrl } from "@tauri-apps/plugin-opener";
 import { classify, buildPreview, type LoadedFile } from "./preview";
 import { FileTree } from "./FileTree";
 import "./tokens.css";
@@ -10,6 +11,33 @@ import "./App.css";
 
 const RECENTS_KEY = "fev.recents";
 const MAX_RECENTS = 8;
+// GitHub repo used for the "check for updates" lookup.
+const REPO = "POSTTTT/fev";
+
+// Compare dotted versions numerically: is `latest` newer than `current`?
+function isNewer(latest: string, current: string): boolean {
+  const a = latest.split(".").map((n) => parseInt(n, 10) || 0);
+  const b = current.split(".").map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] ?? 0;
+    const y = b[i] ?? 0;
+    if (x !== y) return x > y;
+  }
+  return false;
+}
+
+type UpdateState = {
+  status: "idle" | "checking" | "latest" | "available" | "error";
+  version?: string;
+  url?: string;
+  message?: string;
+};
+
+// Settings sections. Add an entry here + a branch in the body to grow it.
+type SettingsSection = "about";
+const SETTINGS_SECTIONS: { id: SettingsSection; label: string }[] = [
+  { id: "about", label: "About" },
+];
 
 interface ProjectInfo {
   is_project: boolean;
@@ -75,6 +103,43 @@ function App() {
   const [activeView, setActiveView] = useState<"file" | "dev">("file");
   const [folderInfoOpen, setFolderInfoOpen] = useState(false);
   const [dontShowFolderInfo, setDontShowFolderInfo] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsSection, setSettingsSection] = useState<SettingsSection>("about");
+  const [appVersion, setAppVersion] = useState("");
+  const [update, setUpdate] = useState<UpdateState>({ status: "idle" });
+
+  // App version (from tauri.conf.json) for the About box.
+  useEffect(() => {
+    getVersion().then(setAppVersion).catch(() => {});
+  }, []);
+
+  // Route A update check: read the latest GitHub release tag, compare to the
+  // running version. No auto-install — just point the user at the download.
+  async function checkUpdate() {
+    setUpdate({ status: "checking" });
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${REPO}/releases/latest`,
+        { headers: { Accept: "application/vnd.github+json" } },
+      );
+      if (!r.ok) throw new Error(`GitHub responded ${r.status}`);
+      const data = await r.json();
+      const latest = String(data.tag_name ?? "").replace(/^v/, "");
+      if (latest && appVersion && isNewer(latest, appVersion)) {
+        setUpdate({ status: "available", version: latest, url: data.html_url });
+      } else {
+        setUpdate({ status: "latest" });
+      }
+    } catch (e) {
+      setUpdate({ status: "error", message: String(e) });
+    }
+  }
+
+  function openSettings() {
+    setUpdate({ status: "idle" });
+    setSettingsSection("about");
+    setSettingsOpen(true);
+  }
 
   function pushRecentFolder(path: string) {
     setRecentFolders((prev) => {
@@ -454,6 +519,98 @@ function App() {
         </div>
       )}
 
+      {settingsOpen && (
+        <div className="modal-backdrop" onClick={() => setSettingsOpen(false)}>
+          <div
+            className="modal-card settings-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <nav className="settings-nav">
+              <div className="settings-nav-title">Settings</div>
+              {SETTINGS_SECTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  className={`settings-nav-item${
+                    settingsSection === s.id ? " active" : ""
+                  }`}
+                  onClick={() => setSettingsSection(s.id)}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </nav>
+
+            <div className="settings-body">
+              {settingsSection === "about" && (
+                <>
+                  <h2 className="modal-title">F.E.V — Front-End View</h2>
+                  <p className="modal-text">Version {appVersion || "…"}</p>
+                  <p className="modal-text muted">
+                    Preview front-end files and run real front-end projects — no
+                    build step, no terminal.
+                  </p>
+                  <p className="modal-text">
+                    <span
+                      className="link"
+                      onClick={() => openUrl(`https://github.com/${REPO}`)}
+                    >
+                      github.com/{REPO}
+                    </span>
+                  </p>
+
+                  <div className="about-update">
+                    {update.status === "latest" && (
+                      <span className="muted">
+                        You're on the latest version.
+                      </span>
+                    )}
+                    {update.status === "available" && (
+                      <span className="update-avail">
+                        Update available: v{update.version}
+                      </span>
+                    )}
+                    {update.status === "error" && (
+                      <span className="run-error">
+                        Couldn't check: {update.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="modal-actions">
+                    {update.status === "available" ? (
+                      <button
+                        className="open-btn"
+                        onClick={() => update.url && openUrl(update.url)}
+                      >
+                        Download update
+                      </button>
+                    ) : (
+                      <button
+                        className="open-btn"
+                        onClick={checkUpdate}
+                        disabled={update.status === "checking"}
+                      >
+                        {update.status === "checking"
+                          ? "Checking…"
+                          : "Check for updates"}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              className="settings-close"
+              title="Close"
+              onClick={() => setSettingsOpen(false)}
+            >
+              <IconClose />
+            </button>
+          </div>
+        </div>
+      )}
+
       {!sidebarOpen && (
         <button
           className="reveal-btn"
@@ -603,6 +760,16 @@ function App() {
               )}
             </div>
           )}
+
+          <div className="sidebar-footer">
+            <button
+              className="about-btn"
+              onClick={openSettings}
+              title="Settings"
+            >
+              Settings
+            </button>
+          </div>
         </aside>
       )}
 

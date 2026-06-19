@@ -6,15 +6,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Non-render-blocking: load fonts async so first paint isn't stalled on
+         the network (slow behind a corporate proxy). swap in when ready. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
     <title>F.E.V — Front-End View</title>
+    <style>
+      /* Instant loading screen — painted before React/fonts load, removed on mount. */
+      #fev-boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: #282c34;
+        color: #abb2bf;
+        font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      #fev-boot .brand {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #61afef;
+      }
+      #fev-boot .spin {
+        width: 26px;
+        height: 26px;
+        border: 3px solid rgba(171, 178, 191, 0.25);
+        border-top-color: #61afef;
+        border-radius: 50%;
+        animation: fev-boot-spin 0.7s linear infinite;
+      }
+      @keyframes fev-boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #fev-boot .spin {
+          animation: none;
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="fev-boot">
+        <div class="brand">F.E.V</div>
+        <div class="spin"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
