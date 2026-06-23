@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
@@ -368,8 +368,11 @@ function App() {
     setIsResizing(true);
   }
 
-  const kind = file ? classify(file.ext) : null;
-  const preview = file ? buildPreview(file) : null;
+  // Memoized: buildPreview rescans + restringifies the whole source, and this
+  // runs on every render (e.g. each mousemove during a sidebar drag). Only the
+  // file matters, so recompute only when it changes.
+  const kind = useMemo(() => (file ? classify(file.ext) : null), [file]);
+  const preview = useMemo(() => (file ? buildPreview(file) : null), [file]);
 
   // Group recents by file suffix, ordered with the common types first.
   const EXT_ORDER = ["html", "htm", "jsx", "tsx", "js", "ts", "css"];
