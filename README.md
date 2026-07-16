@@ -1,6 +1,21 @@
-# F.E.V — Front-End View
+<div align="center">
 
-Preview front-end files and run real front-end projects — with **no build step and no terminal**.
+<img src="docs/banner.png" alt="F.E.V" width="380" />
+
+# F.E.V — Front-End View 👁️
+
+*See any front-end file. No build step, no terminal.*
+
+[Download](https://github.com/POSTTTT/fev/releases/latest) · [Examples](examples) · [Report a bug](https://github.com/POSTTTT/fev/issues)
+
+![Release](https://img.shields.io/github/v/release/POSTTTT/fev?style=for-the-badge&label=RELEASE&labelColor=282c34&color=61afef)
+![Platform](https://img.shields.io/badge/PLATFORM-Windows-abb2bf?style=for-the-badge&labelColor=282c34)
+![Built with](https://img.shields.io/badge/BUILT%20WITH-Tauri%20%C2%B7%20Rust%20%C2%B7%20React-c678dd?style=for-the-badge&labelColor=282c34)
+![No build step](https://img.shields.io/badge/BUILD%20STEP-none-98c379?style=for-the-badge&labelColor=282c34)
+
+</div>
+
+**Preview front-end files and run real front-end projects** — with **no build step and no terminal**. Open it, see it.
 
 ## The idea
 
