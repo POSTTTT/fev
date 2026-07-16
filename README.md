@@ -67,34 +67,9 @@ npm run tauri dev    # build + launch the app
 npm run tauri build  # standalone exe + installer
 ```
 
-## App icon
-
-Generated from `src-tauri/app-icon.png` (square, 1024×1024):
-
-```sh
-npm run tauri icon src-tauri/app-icon.png
-```
-
-## Stack
-
-Tauri · Rust · React + Vite (TypeScript) · sandboxed iframe preview · monospace design-system theme.
-
-## Try it
-
-Run `npm run tauri dev`, then:
-- **File:** open `examples/hello.html` or `examples/counter.jsx`.
-- **Folder:** open a real project (e.g. a Vite app) → **Run dev server**.
-
 ## Notes (Windows / network)
 
 This repo lives in OneDrive on a network with a corporate CA — two workarounds are committed:
 
 - `NODE_OPTIONS=--use-system-ca` for `npm install` (cert verification).
 - `src-tauri/.cargo/config.toml`: `check-revoke = false` (schannel can't reach the revocation server) and `target-dir` pointed outside OneDrive (OneDrive locks `target/*.dll` during linking → `LNK1105`).
-
-## Roadmap
-
-- ✅ HTML preview (incl. multi-file relative assets)
-- ✅ JSX/TSX preview (online, via esm.sh + Tailwind CDN)
-- ✅ Folder browser + run real project dev servers
-- 🔭 Offline preview (vendor common libs + local cache) — explored, not currently shipped.
