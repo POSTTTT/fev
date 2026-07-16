@@ -57,6 +57,12 @@ html,
   color: var(--ds-color-accent-primary);
 }
 
+.brand img {
+  display: block;
+  height: 28px;
+  image-rendering: pixelated;
+}
+
 /* Sidebar collapse / reveal toggles */
 .collapse-btn,
 .reveal-btn {

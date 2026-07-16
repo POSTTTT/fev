@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,10 +30,9 @@
         font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
       }
       #fev-boot .brand {
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: #61afef;
+        width: 96px;
+        height: 96px;
+        image-rendering: pixelated;
       }
       #fev-boot .spin {
         width: 26px;
@@ -59,7 +58,7 @@
   <body>
     <div id="root">
       <div id="fev-boot">
-        <div class="brand">F.E.V</div>
+        <img class="brand" src="/logo.png" alt="F.E.V" />
         <div class="spin"></div>
       </div>
     </div>

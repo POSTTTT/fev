@@ -628,7 +628,7 @@ function App() {
         <aside className="sidebar" style={{ width: sidebarWidth }}>
           <div className="brand-row">
             <div className="brand" onClick={goHome} title="Home — clear preview">
-              F.E.V
+              <img src="/logo.png" alt="F.E.V" />
             </div>
             <button
               className="collapse-btn"
